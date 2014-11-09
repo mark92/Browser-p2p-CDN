@@ -1,0 +1,38 @@
+<html>
+<head>
+	<title>DataChannels WebRTC Demo</title>
+	<script type='text/javascript' src='https://cdn.firebase.com/v0/firebase.js'></script>
+
+	<!-- Testing shit -->
+	<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+	<script type="text/javascript" src="https://code.jquery.com/ui/1.11.1/jquery-ui.min.js"></script>
+
+	<link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css">
+	<link href='http://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" href="styles/styles.css">
+
+</head>
+<body>
+
+<div class="debug-window window">
+	<div class="log list">
+	</div>
+</div>
+
+<div class="peer-window window">
+	<div class="list">
+	</div>
+</div>
+
+<input type="text" name="msg" class="msgBox">
+
+<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+
+<script type="text/javascript" src="scripts/webRTCnormalize.js"></script>
+<script type="text/javascript" src="scripts/debugger.js"></script>
+<script type="text/javascript" src="scripts/signaler.js"></script>
+<script type="text/javascript" src="scripts/p2pManager.js"></script>
+<script type="text/javascript" src="scripts/connectionManager.js"></script>
+<script type="text/javascript" src="scripts/main.js"></script>
+</body>
+</html>

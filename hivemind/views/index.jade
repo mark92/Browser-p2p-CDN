@@ -1,0 +1,29 @@
+extend layout
+block top
+    title DataChannels WebRTC Demo
+    script(type='text/javascript', src='https://code.jquery.com/jquery-2.1.1.min.js')
+    script(type='text/javascript', src='https://code.jquery.com/ui/1.11.1/jquery-ui.min.js')
+    link(rel='stylesheet', type='text/css', href='http://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css')
+    link(href='http://fonts.googleapis.com/css?family=Ubuntu', rel='stylesheet', type='text/css')
+    link(rel='stylesheet', type='text/css', href='styles/styles.css')
+
+block mid
+  .content
+    img( data-resource='/images/testImage')
+  .debug-window.window
+    .log.list
+  .peer-window.window
+    .list
+  input.msgBox(type='text', name='msg')
+    
+block bot
+  script(src='https://cdn.socket.io/socket.io-1.2.0.js')
+  script(type='text/javascript', src='peerlist/#{pageName}')
+  script(type='text/javascript', src='scripts/webRTCnormalize.js')
+  script(type='text/javascript', src='scripts/debugger.js')
+  script(type='text/javascript', src='scripts/signaler.js')
+  script(type='text/javascript', src='scripts/fileManager.js')
+  script(type='text/javascript', src='scripts/p2pManager.js')
+  script(type='text/javascript', src='scripts/resourceManager.js')
+  script(type='text/javascript', src='scripts/connectionManager.js')
+  script(type='text/javascript', src='scripts/main.js')

@@ -1,0 +1,11 @@
+{
+    "name": "hivemind",
+    "version": "0.0.1",
+    "private": true,
+    "dependencies": {
+        "express": "*",
+        "socket.io": "*",
+        "cookie-parser": "*",
+        "jade": "*"
+    }
+}
