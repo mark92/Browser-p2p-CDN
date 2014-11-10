@@ -1,60 +1,77 @@
 var SessionManager = function(){
-	var sessionManager = this;
+	var self = this;
 
-	this.id = Date.now().toString() + (Math.random()*100000).toString().split('.')[0],
+	this.id = Date.now().toString() + (Math.random()*100000).toString().split('.')[0];
 	this.session = {
 		timestamp: Date.now(),
-		checkin: 0
+		checkin: Date.now()
 	}
 
 	this.registerSelf = function(){
-		var sessions = JSON.parse(sessionStorage.sessions || '{}');
-		sessions[this.id] = true;
-		sessionStorage.sessions = JSON.stringify(sessions);
-
-		sessionStorage["session_"+this.id] = JSON.stringify(this.session);
-
-		checkForRace();
+		requestPermission(function(){
+			var sessions = JSON.parse(localStorage.sessions || '{}');
+			sessions[self.id] = true;
+			if( Object.keys(sessions).length == 1 ) beLeader();
+			localStorage.sessions = JSON.stringify(sessions);
+			localStorage["session_"+self.id] = JSON.stringify(this.session);
+			heartbeat();
+		});
 	}
 
-	function checkForRace(){
-		var triesLeft = 10;
+	function heartbeat(){
+		requestPermission(function(){
+			var sessions = JSON.parse(localStorage.sessions);
+			var time = Date.now();
+			self.session.checkin = time;
+			localStorage[ "session_"+self.id ] = JSON.stringify( self.session );
 
-		var interval = setInterval(function(){
-			triesLeft--;
-			var sessions = JSON.parse(sessionStorage.sessions);
-
-			if( triesLeft == 0 ){
-				clearInterval(interval);
-				sessionManager.sessions = sessions;
-				heartbeat();
+			var theWinnerIsYou = false;
+			for( var session in sessions ){
+				if( time - JSON.parse(localStorage[ "session_"+session ]).checkin > 2000 ){
+					delete sessions[session];
+					theWinnerIsYou = true;					
+				}
 			}
 
-			if( !sessions[sessionManager.id] ){
-				clearInterval(interval);
-				sessionManager.registerSelf();
+			localStorage.sessions = JSON.stringify(sessions);
+
+			if( theWinnerIsYou ){
+				beLeader();
+			}
+			
+			setTimeout(heartbeat, 0);
+		});
+	}
+
+	function listenForSessionEvent(eventName, callback, terminate){
+		setInterval(function(){
+			if( localStorage["events_"+eventName] ){
+				if(terminate) delete localStorage["events_"+eventName];
+				callback(localStorage["events_"+eventName]);
+			}
+		},10);
+	}
+
+	function fireSessionEvent(eventName, info){
+		localStorage["events_"+eventName] = JSON.stringify(info) || true;
+	}
+
+	function requestPermission(callback){
+		var x = setInterval(function(){
+			if( !localStorage.occupied ){
+				clearInterval(x);
+				localStorage.occupied = true;
+
+				callback();
+
+				delete localStorage.occupied;
 			}
 		},2);
 	}
 
-	function heartbeat(){
-		var sessions = JSON.parse(sessionStorage.sessions);
-		delete sessions["session_"+this.id];
-
-		var time = Date.now();
-
-		var seismic = false;
-		for( var session in sessions ){
-			if( time - JSON.parse(sessionStorage[ "session_"+session ]).checkin > 2000 ){
-				var buff = JSON.parse(sessionStorage[ "session_"+session ]);
-				buff.dead = true;
-				sessionStorage[ "session_"+session ] = JSON.stringify(buff);
-				seismic = true;
-			}
-		}
+	function beLeader(){
+		console.log("yay");
 	}
 
-	function setLeader(leader){
-
-	}
+	this.registerSelf();
 }
