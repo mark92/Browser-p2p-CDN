@@ -1,34 +1,9 @@
 var express = require('express');
 var app = express();
 var http = require('http').Server(app);
-var cookieParser = require('cookie-parser');
 var io = require('socket.io')(http);
 
 var peerList = {};
-app.use(cookieParser('1234'));
-
-app.set('views', __dirname + '/hivemind/views')
-app.set('view engine', 'jade')
-app.set('view options', {
-    layout: false
-});
-
-app.get('/', function(req, res) {
-    var id;
-    if (req.cookies['uid']) {
-        id = req.cookies['uid'];
-    } else {
-        id = new Date().getTime();
-    }
-
-    peerList["home"] = peerList["home"] || {};
-    peerList["home"][id] = true;
-
-    setUID(res, id);
-    res.render('index', {
-        pageName: 'home'
-    });
-});
 
 app.get('/peerlist/*', function(req, res) {
     var peers = peerList[req.originalUrl.split("peerlist/")[1]];
@@ -36,20 +11,25 @@ app.get('/peerlist/*', function(req, res) {
 });
 
 app.use('/scripts', express.static(__dirname + '/hivemind/scripts'));
-app.use('/styles', express.static(__dirname + '/hivemind/styles'));
-app.use('/images', express.static(__dirname + '/hivemind/images'));
 
 var sockets = {};
 io.on('connection', function(socket) {
     console.log('a user connected');
-    socket.on('myidis', function(msg) {
-    	sockets[msg] = this;
-        this.uid = msg;
+
+    socket.on("pagename", function(msg){
+        peerList[msg] = peerList[msg] || {};
+        peerList[msg][this.id] = true;
+        sockets[this.id] = sockets[this.id] || this;
+        sockets[this.id].pages = sockets[this.id].pages || [];
+    	sockets[this.id].pages.push(msg);
+        socket.emit('youridis', this.id);
     });
 
     socket.on('disconnect', function() {
-        delete peerList[this.uid];
-        delete sockets[this.uid];
+        for( var i = 0; i < sockets[this.id].pages.length; i++){
+            delete peerList[sockets[this.id].pages[i]][this.id];
+        }
+        delete sockets[this.id];
         console.log('user disconnected');
     });
 
@@ -65,11 +45,3 @@ io.on('connection', function(socket) {
 http.listen(3000, function() {
     console.log('listening on *:3000');
 });
-
-
-function setUID(res, uid) {
-    var thirtyDays = 30 * 24 * 60 * 60 * 1000;
-    res.cookie('uid', uid, {
-        maxAge: thirtyDays
-    });
-}

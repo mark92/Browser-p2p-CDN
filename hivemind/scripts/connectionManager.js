@@ -1,31 +1,30 @@
 var ConnectionManager = function(){
-	var connectionManager = this;
+	var self = this;
 
 	this.init = function(){
-		localStorage.uid = document.cookie.split("uid=")[1].split(";")[0];
 		socket.on("connect", function(){
-			socket.emit("myidis", document.cookie.split("uid=")[1].split(";")[0]);
+			socket.on("youridis", function(msg){
+				self.me = {
+					uid: msg,
+					registered: false
+				};
+				self.pigeon = new Signaler(self.me);
+				self.johny = new P2PManager(self.pigeon, self.me);
+				self.pigeon.updatePeerlist(analyzePeers);
+				self.storageGuy = new ResourceManager();
+				self.storageGuy.scan();
+			});
 		});
-		this.me = {
-			uid: localStorage.uid,
-			registered: false
-		};
-
-		this.pigeon = new Signaler(this.me);
-		this.johny = new P2PManager(this.pigeon, this.me);
-		this.pigeon.updatePeerlist(analyzePeers);
-		this.storageGuy = new ResourceManager();
-		this.storageGuy.scan();
 	}
 	
 	function analyzePeers(peers){
-		delete peers[document.cookie.split("uid=")[1].split(";")[0]];
-		connectionManager.peers = peers;
+		delete peers[self.uid];
+		self.peers = peers;
 		var x = [];
 		for(var peer in peers){
 			x.push(peer);
 		}
-		refreshPeerList(x, connectionManager.johny);
+		refreshPeerList(x, self.johny);
 	}
 
 	this.getResource = function(name){

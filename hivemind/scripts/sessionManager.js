@@ -11,14 +11,14 @@ var SessionManager = function(){
 		requestPermission(function(){
 			var sessions = JSON.parse(localStorage.sessions || '{}');
 			sessions[self.id] = true;
-			if( Object.keys(sessions).length == 1 ) beLeader();
+			if(Object.keys(sessions).length == 1) beLeader();
 			localStorage.sessions = JSON.stringify(sessions);
-			localStorage["session_"+self.id] = JSON.stringify(this.session);
-			heartbeat();
+			localStorage["session_"+self.id] = JSON.stringify(self.session);
+			self.heartbeat();
 		});
 	}
 
-	function heartbeat(){
+	this.heartbeat = function(){
 		requestPermission(function(){
 			var sessions = JSON.parse(localStorage.sessions);
 			var time = Date.now();
@@ -27,7 +27,8 @@ var SessionManager = function(){
 
 			var theWinnerIsYou = false;
 			for( var session in sessions ){
-				if( time - JSON.parse(localStorage[ "session_"+session ]).checkin > 2000 ){
+				if( time - JSON.parse(localStorage[ "session_"+session ]).checkin > 5000 ){
+					console.log(session);
 					delete sessions[session];
 					theWinnerIsYou = true;					
 				}
@@ -39,11 +40,11 @@ var SessionManager = function(){
 				beLeader();
 			}
 			
-			setTimeout(heartbeat, 0);
+			setTimeout(self.heartbeat, 0);
 		});
 	}
 
-	function listenForSessionEvent(eventName, callback, terminate){
+	this.listenForSessionEvent = function(eventName, callback, terminate){
 		setInterval(function(){
 			if( localStorage["events_"+eventName] ){
 				if(terminate) delete localStorage["events_"+eventName];
@@ -52,7 +53,7 @@ var SessionManager = function(){
 		},10);
 	}
 
-	function fireSessionEvent(eventName, info){
+	this.fireSessionEvent = function(eventName, info){
 		localStorage["events_"+eventName] = JSON.stringify(info) || true;
 	}
 
@@ -70,7 +71,9 @@ var SessionManager = function(){
 	}
 
 	function beLeader(){
-		console.log("yay");
+		self.leader = true;
+		receptionist.master();
+		debug("I AM THE LAW!");
 	}
 
 	this.registerSelf();

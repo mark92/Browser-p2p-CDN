@@ -1,5 +1,7 @@
 var ResourceManager = function(){
 
+	window.webRTCresources = {};
+
 	String.prototype.hashCode = function() {
 		var hash = 0, i, chr, len;
 		if (this.length == 0) return hash;
@@ -16,7 +18,7 @@ var ResourceManager = function(){
 		var resource;
 
 		for( var i = 0; i < images.length; i++ ){
-			resource = localStorage["resource_"+images[i].getAttribute("data-resource")];
+			resource = webRTCresources["resource_"+images[i].getAttribute("data-resource")];
 			if( resource ){
 				images[i].src = resource;
 			} else {
@@ -26,7 +28,7 @@ var ResourceManager = function(){
 				if( well != "okay" ){
 					(function(img){
 						$.get( img.getAttribute("data-resource"), function(msg){
-							localStorage["resource_" + img.getAttribute("data-resource")] = msg;
+							webRTCresources["resource_" + img.getAttribute("data-resource")] = msg;
 							img.src = msg;
 						});
 					})(images[i]);
@@ -39,7 +41,7 @@ var ResourceManager = function(){
 		var resource = e.type;
 		var images = document.querySelectorAll("img[data-resource = '"+resource+"']");
 		for( var i = 0; i < images.length; i++ ){
-			images[i].src = localStorage["resource_"+resource];
+			images[i].src = webRTCresources["resource_"+resource];
 		}
 	}
 }
