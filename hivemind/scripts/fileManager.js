@@ -26,9 +26,8 @@ var FileManager = function(){
 
 		webRTCresources["resource_"+input[0].name] = output;
 		debug("Resource rebuilt: "+input[0].name);
-		var x = new Event(input[0].name);
+		var x = new Event("resource_"+input[0].name);
 		document.dispatchEvent(x);
-		sessionManager.fireSessionEvent("receivedResource"+name);
 	}
 
 	this.rebuild = function(input){

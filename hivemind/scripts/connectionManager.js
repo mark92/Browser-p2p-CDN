@@ -2,23 +2,28 @@ var ConnectionManager = function(){
 	var self = this;
 
 	this.init = function(){
+		socket.on("youridis", function(msg){
+			debug("Received ID - "+msg);
+			self.me = {
+				uid: msg,
+				registered: false
+			};
+			self.pigeon = new Signaler(self.me);
+			self.johny = new P2PManager(self.pigeon, self.me);
+			self.pigeon.updatePeerlist(analyzePeers);
+			self.storageGuy = new ResourceManager();
+			self.storageGuy.scan();
+		});
+
 		socket.on("connect", function(){
-			socket.on("youridis", function(msg){
-				self.me = {
-					uid: msg,
-					registered: false
-				};
-				self.pigeon = new Signaler(self.me);
-				self.johny = new P2PManager(self.pigeon, self.me);
-				self.pigeon.updatePeerlist(analyzePeers);
-				self.storageGuy = new ResourceManager();
-				self.storageGuy.scan();
-			});
+			debug("Connected to peer server");
+			socket.emit("pagename", "home");
+			debug("Sending page name to server");
 		});
 	}
 	
 	function analyzePeers(peers){
-		delete peers[self.uid];
+		delete peers[self.me.uid];
 		self.peers = peers;
 		var x = [];
 		for(var peer in peers){

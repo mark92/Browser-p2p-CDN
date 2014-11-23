@@ -1,4 +1,5 @@
 var ResourceManager = function(){
+	var self = this;
 
 	window.webRTCresources = {};
 
@@ -13,35 +14,59 @@ var ResourceManager = function(){
 		return hash;
 	};
 
-	this.scan = function(){
-		var images = document.querySelectorAll("img");
+	this.scan = function(images){
+		var images = images || document.querySelectorAll("img");
+		var resources = {};
+		for( var i = 0; i < images.length; i++){
+			resources[images[i].getAttribute("data-resource")] = true;
+		}
 		var resource;
 
-		for( var i = 0; i < images.length; i++ ){
-			resource = webRTCresources["resource_"+images[i].getAttribute("data-resource")];
+		for( var i in resources ){
+			resource = webRTCresources["resource_"+i];
 			if( resource ){
-				images[i].src = resource;
+				this.receiveResource(i);
 			} else {
-				document.addEventListener(images[i].getAttribute("data-resource"), this.receiveResource);
-				var well = receptionist.getResource(images[i].getAttribute("data-resource"));
+				document.addEventListener("resource_"+i, this.receiveResource);
+				var well = receptionist.getResource(i);
 				
 				if( well != "okay" ){
-					(function(img){
-						$.get( img.getAttribute("data-resource"), function(msg){
-							webRTCresources["resource_" + img.getAttribute("data-resource")] = msg;
-							img.src = msg;
-						});
-					})(images[i]);
+					this.downloadFromOrigin(i);
 				} 
 			}
 		}
 	}
 
 	this.receiveResource = function(e){
-		var resource = e.type;
+		//for passing event names and the resource names
+		debug(e.type? "Resource retreived from peer - "+e.type: "Resource retreived from cache");
+		var resource = e.type.substring(9) || e;
 		var images = document.querySelectorAll("img[data-resource = '"+resource+"']");
 		for( var i = 0; i < images.length; i++ ){
 			images[i].src = webRTCresources["resource_"+resource];
 		}
+	}
+
+	this.downloadFromOrigin = function(rsc){
+		debug("No peers, downloading from origin - "+rsc);
+		
+		var images = document.querySelectorAll("img[data-resource='"+rsc+"']");
+		images[0].addEventListener("load", function(){
+			webRTCresources["resource_"+rsc] = self.toBase64(images[0]);
+		});
+		for( var i = 0; i < images.length; i++){
+			images[i].crossOrigin = '';
+			images[i].src = rsc;
+		}
+	}
+
+	this.toBase64 = function(image){
+		var cnv = document.createElement("canvas");
+		cnv.width = image.width;
+		cnv.height = image.height;
+		var ctx = cnv.getContext('2d');
+		ctx.drawImage(image,0,0);
+
+		return cnv.toDataURL();
 	}
 }

@@ -35,6 +35,7 @@ var P2PManager = function(signaler, me){
 	}
 
 	this.pleaseInitConnection = function(to){
+		if( this.connections.host[to] ) return;
 		var pc = new PeerConnection(this.iceBucket.servers, this.iceBucket.options);
 		var channel = pc.createDataChannel("channel", {});
 		receiveMessages(channel, to);
