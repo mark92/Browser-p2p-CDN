@@ -14,7 +14,7 @@ var ResourceManager = function(){
 		return hash;
 	};
 
-	this.scan = function(images){
+	this.scan = function(pagename, images){
 		var images = images || document.querySelectorAll("img");
 		var resources = {};
 		for( var i = 0; i < images.length; i++){
@@ -22,19 +22,20 @@ var ResourceManager = function(){
 		}
 		var resource;
 
+		var retrieveList = [];
 		for( var i in resources ){
 			resource = webRTCresources["resource_"+i];
 			if( resource ){
 				this.receiveResource(i);
 			} else {
 				document.addEventListener("resource_"+i, this.receiveResource);
-				var well = receptionist.getResource(i);
-				
-				if( well != "okay" ){
-					this.downloadFromOrigin(i);
-				} 
+				retrieveList.push(i);
 			}
 		}
+		receptionist.loadPage(pagename, retrieveList);
+		document.addEventListener("peersNotFound", function(){
+			self.downloadFromOrigin(retrieveList);
+		});
 	}
 
 	this.receiveResource = function(e){
@@ -47,16 +48,23 @@ var ResourceManager = function(){
 		}
 	}
 
-	this.downloadFromOrigin = function(rsc){
-		debug("No peers, downloading from origin - "+rsc);
-		
-		var images = document.querySelectorAll("img[data-resource='"+rsc+"']");
-		images[0].addEventListener("load", function(){
-			webRTCresources["resource_"+rsc] = self.toBase64(images[0]);
-		});
-		for( var i = 0; i < images.length; i++){
-			images[i].crossOrigin = '';
-			images[i].src = rsc;
+	this.downloadFromOrigin = function(rscs){
+		for( var j = 0; j < rscs.length; j++ ){
+			var rsc = rscs[j];
+			debug("No peers, downloading from origin - "+rsc);
+			
+			var images = document.querySelectorAll("img[data-resource='"+rsc+"']");
+
+			(function(img, rsc){
+				img.addEventListener("load", function(){
+					webRTCresources["resource_"+rsc] = self.toBase64(img);
+				});
+			})(images[0], rsc);
+
+			for( var i = 0; i < images.length; i++){
+				images[i].crossOrigin = '';
+				images[i].src = rsc;
+			}
 		}
 	}
 

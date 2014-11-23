@@ -17,7 +17,6 @@ function loadScripts(sources){
 
 var baseUrl = "http://127.0.0.1:3000/";
 var sources = [
-    baseUrl+"peerlist/home",
     baseUrl+"scripts/webRTCnormalize.js",
     baseUrl+"scripts/debugger.js",
     baseUrl+"scripts/signaler.js",

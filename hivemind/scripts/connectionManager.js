@@ -4,44 +4,62 @@ var ConnectionManager = function(){
 	this.init = function(){
 		socket.on("youridis", function(msg){
 			debug("Received ID - "+msg);
+			localStorage['peer_'+msg] = true;
 			self.me = {
 				uid: msg,
 				registered: false
 			};
 			self.pigeon = new Signaler(self.me);
 			self.johny = new P2PManager(self.pigeon, self.me);
-			self.pigeon.updatePeerlist(analyzePeers);
 			self.storageGuy = new ResourceManager();
-			self.storageGuy.scan();
+			var x = new Event("ConnectionManager_ready");
+			document.dispatchEvent(x);
 		});
 
 		socket.on("connect", function(){
 			debug("Connected to peer server");
-			socket.emit("pagename", "home");
-			debug("Sending page name to server");
 		});
 	}
 	
-	function analyzePeers(peers){
+	function analyzePeers(peers, pageName){
 		delete peers[self.me.uid];
 		self.peers = peers;
 		var x = [];
 		for(var peer in peers){
 			x.push(peer);
 		}
+		var y = new Event("peerlist_"+pageName+"_ready");
+		document.dispatchEvent(y);
 		refreshPeerList(x, self.johny);
 	}
 
+	this.loadPage = function(pageName, resources){
+		self.pigeon.updatePeerlist(analyzePeers, pageName);
+		document.addEventListener("peerlist_"+pageName+"_ready", function(){
+			if(Object.keys(self.peers).length != 0){
+				for( var resource = 0; resource < resources.length; resource++ ){
+					self.getResource(resources[resource]);
+				}
+				var x = new Event("peersFound");
+				document.dispatchEvent(x);
+			} else {
+				var x = new Event("peersNotFound");
+				document.dispatchEvent(x);
+			}
+		});
+	}
+	
 	this.getResource = function(name){
-		if(Object.keys(peers).length != 0){
-			this.johny.pleaseInitConnection(Object.keys(peers)[0]);
-			document.addEventListener(Object.keys(peers)[0], function(){
-				receptionist.johny.emmitMessage("ask:"+name);
-			});
-			return "okay";
-		} else {
-			return "no peers";
+		for( var peer in self.peers ){
+			if( localStorage['peer_'+peer] ){
+				break;
+			}
+			peer == null;
 		}
+		this.johny.pleaseInitConnection(peer||Object.keys(self.peers)[0]);
+		document.addEventListener(peer||Object.keys(self.peers)[0], function(){
+			receptionist.johny.emmitMessage("ask:"+name);
+		});
 	}
 
 }

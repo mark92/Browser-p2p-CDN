@@ -15,6 +15,8 @@ app.use('/scripts', express.static(__dirname + '/hivemind/scripts'));
 var sockets = {};
 io.on('connection', function(socket) {
     console.log(socket.id+': a user connected');
+    console.log(socket.id+': sending ID');
+    socket.emit('youridis', socket.id);
 
     socket.on("pagename", function(msg){
         console.log(this.id+': received pagename - '+msg);
@@ -22,9 +24,10 @@ io.on('connection', function(socket) {
         peerList[msg][this.id] = true;
         sockets[this.id] = sockets[this.id] || this;
         sockets[this.id].pages = sockets[this.id].pages || [];
-    	sockets[this.id].pages.push(msg);
-        console.log(this.id+': sending ID');
-        socket.emit('youridis', this.id);
+        sockets[this.id].pages.push(msg);
+
+        var peers = peerList[msg];
+        socket.emit("peerList_"+msg, (JSON.stringify(peers) || JSON.stringify({}) ));
     });
 
     socket.on('disconnect', function() {

@@ -1,7 +1,13 @@
 var Signaler = function(me){
-	this.updatePeerlist = function(analyzer){
+	this.updatePeerlist = function(analyzer, pagename){
 		debug("updating peer list");
-		analyzer(peers);
+		debug("Sending page name to server");
+		socket.emit("pagename", pagename);
+		socket.on("peerList_"+pagename, function(msg){
+			debug("Received peerlist");
+			var peers = JSON.parse(msg);
+			analyzer(peers, pagename);
+		});
 	}
 
 	this.checkInbox = function(offerAnalyzer, answerAnalyzer){
