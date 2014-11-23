@@ -24,6 +24,7 @@ var sources = [
     baseUrl+"scripts/p2pManager.js",
     baseUrl+"scripts/resourceManager.js",
     baseUrl+"scripts/connectionManager.js",
+    baseUrl+"scripts/globalCache.js",
     baseUrl+"scripts/main.js"
 ];
 

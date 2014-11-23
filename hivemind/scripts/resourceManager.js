@@ -3,38 +3,39 @@ var ResourceManager = function(){
 
 	window.webRTCresources = {};
 
-	String.prototype.hashCode = function() {
-		var hash = 0, i, chr, len;
-		if (this.length == 0) return hash;
-		for (i = 0, len = this.length; i < len; i++) {
-			chr   = this.charCodeAt(i);
-			hash  = ((hash << 5) - hash) + chr;
-			hash |= 0; // Convert to 32bit integer
+	this.scan = function(pagename, images, caching){
+		if( caching ){
+			var resources = images;
+		} else {
+			var images = images || document.querySelectorAll("img");
+			var resources = {};
+			for( var i = 0; i < images.length; i++){
+				resources[images[i].getAttribute("data-resource")] = true;
+			}
 		}
-		return hash;
-	};
 
-	this.scan = function(pagename, images){
-		var images = images || document.querySelectorAll("img");
-		var resources = {};
-		for( var i = 0; i < images.length; i++){
-			resources[images[i].getAttribute("data-resource")] = true;
-		}
 		var resource;
+		var receivedResources = 0;
 
-		var retrieveList = [];
 		for( var i in resources ){
 			resource = webRTCresources["resource_"+i];
 			if( resource ){
 				this.receiveResource(i);
 			} else {
 				document.addEventListener("resource_"+i, this.receiveResource);
-				retrieveList.push(i);
+				document.addEventListener("resource_"+i, function(){
+					receivedResources++;
+					if( receivedResources == Object.keys(resources).length ){
+						memmory.announce(pagename, resources);
+					}
+				});
 			}
 		}
-		receptionist.loadPage(pagename, retrieveList);
+		
+
+		receptionist.loadPage(pagename, resources);
 		document.addEventListener("peersNotFound", function(){
-			self.downloadFromOrigin(retrieveList);
+			self.downloadFromOrigin(resources);
 		});
 	}
 
@@ -49,8 +50,7 @@ var ResourceManager = function(){
 	}
 
 	this.downloadFromOrigin = function(rscs){
-		for( var j = 0; j < rscs.length; j++ ){
-			var rsc = rscs[j];
+		for( var rsc in rscs ){
 			debug("No peers, downloading from origin - "+rsc);
 			
 			var images = document.querySelectorAll("img[data-resource='"+rsc+"']");

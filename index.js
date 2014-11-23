@@ -31,7 +31,7 @@ io.on('connection', function(socket) {
     });
 
     socket.on('disconnect', function() {
-        if(sockets[this.id].pages){
+        if(sockets[this.id] && sockets[this.id].pages){
             for( var i = 0; i < sockets[this.id].pages.length; i++){
                 delete peerList[sockets[this.id].pages[i]][this.id];
             }

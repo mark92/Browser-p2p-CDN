@@ -37,8 +37,8 @@ var ConnectionManager = function(){
 		self.pigeon.updatePeerlist(analyzePeers, pageName);
 		document.addEventListener("peerlist_"+pageName+"_ready", function(){
 			if(Object.keys(self.peers).length != 0){
-				for( var resource = 0; resource < resources.length; resource++ ){
-					self.getResource(resources[resource]);
+				for( var resource in resources ){
+					self.getResource(resource);
 				}
 				var x = new Event("peersFound");
 				document.dispatchEvent(x);
