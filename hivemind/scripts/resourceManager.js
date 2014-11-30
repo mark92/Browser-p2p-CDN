@@ -28,12 +28,12 @@ var ResourceManager = function(){
 			if( resource ){
 				this.receiveResource(i);
 			} else {
-				timeouts["resource_"+i] = (function(){
+				timeouts["resource_"+i] = (function(x){
 					return setTimeout( function(){
 						var rscs = {};
-						rsc["resource_"+i] = true;
+						rscs[x] = true;
 						self.downloadFromOrigin(rscs);
-					}, 4000);
+					}, 8000);
 				})(i);
 				document.addEventListener("resource_"+i, function(e){
 					clearTimeout( timeouts[e.type.substring(9) || e] );
@@ -51,13 +51,16 @@ var ResourceManager = function(){
 
 		receptionist.loadPage(pagename, resources);
 		document.addEventListener("peersNotFound", function(){
+			for( var timeout in timeouts ){
+
+			}
 			self.downloadFromOrigin(resources);
 		});
 	}
 
 	this.receiveResource = function(e){
 		//for passing event names and the resource names
-		debug(e.type? "Resource retreived from peer - "+e.type: "Resource retreived from cache");
+		debug(e.type? "Resource retrieved from peer - "+e.type: "Resource retrieved from cache");
 		var resource = e.type.substring(9) || e;
 		var images = document.querySelectorAll("img[data-resource = '"+resource+"']");
 
@@ -67,6 +70,7 @@ var ResourceManager = function(){
 			}
 		} else {
 			debug("Bad resource, abort P2P");
+			delete webRTCresources["resource_"+resource];
 			var resources = {};
 			resources[resource] = true;
 			self.downloadFromOrigin(resources);

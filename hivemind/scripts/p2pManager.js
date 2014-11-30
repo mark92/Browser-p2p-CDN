@@ -123,7 +123,9 @@ var P2PManager = function(signaler, me){
 
 			if( msg.match(/ask:/g) ){
 				var resource = "resource_" + msg.split("ask:")[1];
-				self.sendResource(this, webRTCresources[resource], msg.split("ask:")[1]);
+				if( webRTCresources[resource] ){
+					self.sendResource(this, webRTCresources[resource], msg.split("ask:")[1]);
+				}
 			}			
 			if( msg.match(/recv:/g) ){
 				var part = JSON.parse(msg.split("recv:")[1]);
