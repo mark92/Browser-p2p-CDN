@@ -1,6 +1,11 @@
-var socket = io("http://127.0.0.1:3000");
-var receptionist = new ConnectionManager();
-var memmory = new GlobalCacheManager();
-memmory.observe();
-document.addEventListener("ConnectionManager_ready", function(){ receptionist.storageGuy.scan("home"); });
-receptionist.init();
+if( PeerConnection ){
+	var socket = io("https://auditorium-js.herokuapp.com");
+	var receptionist = new ConnectionManager();
+	var memmory = new GlobalCacheManager();
+	memmory.observe();
+	document.addEventListener("ConnectionManager_ready", function(){ receptionist.storageGuy.scan(location.href.split("://")[1]); });
+	receptionist.init();
+} else {
+	var storageGuy = new ResourceManager();
+	storageGuy.scan('', null, false, true);
+}

@@ -42,15 +42,21 @@ io.on('connection', function(socket) {
 
     socket.on("offer", function(msg){
         console.log(socket.id+": receiving offer");
-        sockets[JSON.parse(msg).to].emit("offer", msg);
+        if( sockets[JSON.parse(msg).to] ){
+            sockets[JSON.parse(msg).to].emit("offer", msg);
+        } else {
+            socket.emit("peerisdead", msg.to);
+        }
     });
 
     socket.on("answer", function(msg){
         console.log(socket.id+": receiving answer");
-    	sockets[JSON.parse(msg).to].emit("answer", msg);
+        if( sockets[JSON.parse(msg).to] ){
+            sockets[JSON.parse(msg).to].emit("answer", msg);
+        }
     })
 });
 
-http.listen(3000, function() {
-    console.log('listening on *:3000');
+http.listen((process.env.PORT || 3000), function() {
+    console.log('listening on *:'+ (process.env.PORT || 3000));
 });

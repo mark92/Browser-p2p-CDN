@@ -1,5 +1,5 @@
 var P2PManager = function(signaler, me){
-	var p2pManager = this;
+	var self = this;
 	var handy = new FileManager();
 
 	this.iceBucket = {
@@ -27,7 +27,7 @@ var P2PManager = function(signaler, me){
 
 		http.onreadystatechange = function() {
 		    if(http.readyState == 4 && http.status == 200) {
-		        p2pManager.iceBucket.servers = JSON.parse(http.responseText).d;
+		        self.iceBucket.servers = JSON.parse(http.responseText).d;
 		    	signaler.ready(true);
 		    }
 		}
@@ -77,7 +77,7 @@ var P2PManager = function(signaler, me){
 		var pc = new PeerConnection(this.iceBucket.servers, this.iceBucket.options);
 		pc.ondatachannel = function(e){
 			var channel = e.channel;
-			p2pManager.connections.peer[from.id].cnl = channel;
+			self.connections.peer[from.id].cnl = channel;
 			receiveMessages(channel);
 		}
 
@@ -123,13 +123,17 @@ var P2PManager = function(signaler, me){
 
 			if( msg.match(/ask:/g) ){
 				var resource = "resource_" + msg.split("ask:")[1];
-				p2pManager.sendResource(this, webRTCresources[resource], msg.split("ask:")[1]);
+				self.sendResource(this, webRTCresources[resource], msg.split("ask:")[1]);
 			}			
 			if( msg.match(/recv:/g) ){
 				var part = JSON.parse(msg.split("recv:")[1]);
 				handy.rebuild(part);
 			}
 		};
+		channel.onclose = function(e){
+			delete self.connections.host[to];
+			delete self.connections.peer[to];
+		}
 	}
 
 	this.sendResource = function(channel, rsc, rscName){
@@ -163,7 +167,7 @@ var P2PManager = function(signaler, me){
 		debug("offer received");
 
 		debug("start connecting to peer: "+offer.id);
-		p2pManager.iShouldAcceptConnection(offer);
+		self.iShouldAcceptConnection(offer);
 		return;
 	}
 
@@ -172,7 +176,7 @@ var P2PManager = function(signaler, me){
 		debug("answer received");
 
 		debug("continue connecting to peer: "+answer.id);
-		p2pManager.iShouldResumeConnecting(answer);
+		self.iShouldResumeConnecting(answer);
 		return;
 	}
 

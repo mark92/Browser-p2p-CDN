@@ -3,7 +3,7 @@ var ResourceManager = function(){
 
 	window.webRTCresources = {};
 
-	this.scan = function(pagename, images, caching){
+	this.scan = function(pagename, images, caching, noWebRTC){
 		if( caching ){
 			var resources = images;
 		} else {
@@ -14,14 +14,30 @@ var ResourceManager = function(){
 			}
 		}
 
+		if( noWebRTC ){
+			self.downloadFromOrigin(resources);
+			return;
+		}
+
 		var resource;
 		var receivedResources = 0;
+		var timeouts = {};
 
 		for( var i in resources ){
 			resource = webRTCresources["resource_"+i];
 			if( resource ){
 				this.receiveResource(i);
 			} else {
+				timeouts["resource_"+i] = (function(){
+					return setTimeout( function(){
+						var rscs = {};
+						rsc["resource_"+i] = true;
+						self.downloadFromOrigin(rscs);
+					}, 4000);
+				})(i);
+				document.addEventListener("resource_"+i, function(e){
+					clearTimeout( timeouts[e.type.substring(9) || e] );
+				});
 				document.addEventListener("resource_"+i, this.receiveResource);
 				document.addEventListener("resource_"+i, function(){
 					receivedResources++;
@@ -60,6 +76,7 @@ var ResourceManager = function(){
 
 	this.downloadFromOrigin = function(rscs){
 		for( var rsc in rscs ){
+			if( webRTCresources["resource_"+rsc] ) return;
 			debug("No peers, downloading from origin - "+rsc);
 
 			(function(rsc){
