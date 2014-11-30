@@ -30,7 +30,6 @@ var ConnectionManager = function(){
 		}
 		var y = new Event("peerlist_"+pageName+"_ready");
 		document.dispatchEvent(y);
-		refreshPeerList(x, self.johny);
 	}
 
 	this.loadPage = function(pageName, resources){

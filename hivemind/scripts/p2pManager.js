@@ -112,7 +112,6 @@ var P2PManager = function(signaler, me){
 
 	function receiveMessages (channel, to) {
 		channel.onopen = function () { 
-			activateInput();  
 			debug("Channel Open");
 			if(!to) return;
 			var x = new Event(to);

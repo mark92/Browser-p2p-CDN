@@ -1,37 +1,56 @@
-$(".debug-window").draggable({ containment: "parent" });
-document.querySelector(".debug-window .log").addEventListener("mousedown", function(e){e.stopPropagation();});
-document.querySelector(".debug-window .log").style["width"] = 2*document.querySelector(".debug-window .log").getBoundingClientRect().width - document.querySelector(".debug-window .log").scrollWidth;
+var debugWindow = document.createElement("div");
+var logList = document.createElement("div");
+var closeButton = document.createElement("div");
 
-$(".peer-window").draggable({ containment: "parent" });
-document.querySelector(".peer-window .list").addEventListener("mousedown", function(e){e.stopPropagation();});
-document.querySelector(".peer-window .list").style["width"] = 2*document.querySelector(".peer-window .list").getBoundingClientRect().width - document.querySelector(".peer-window .list").scrollWidth;
+closeButton.style['width'] = '3vh';
+closeButton.style['height'] = '3vh';
+closeButton.style['background'] = '#aa3333';
+closeButton.style['position'] = 'absolute';
+closeButton.style['top'] = '0.5vh';
+closeButton.style['right'] = '0.5vh';
+closeButton.style['cursor'] = 'pointer';
 
-document.querySelector(".msgBox").addEventListener("keyup", function(e){
-	if(e.keyCode==13){
-		e.preventDefault();
-		if( this.value != "" ){
-			receptionist.johny.emmitMessage(this.value);
-			this.value = "";
-		}
-	}
+debugWindow.style['width'] = '65vw';
+debugWindow.style['height'] = '50vh';
+debugWindow.style['background'] = '#332a28';
+debugWindow.style['position'] = 'fixed';
+debugWindow.style['right'] = '19vw';
+debugWindow.style['top'] = '20vh';
+debugWindow.style['overflow'] = 'hidden';
+debugWindow.style['-webkit-box-shadow'] = '0px 2px 15px 0px rgba(0, 0, 0, 0.81)';
+debugWindow.style['-moz-box-shadow'] = '0px 2px 15px 0px rgba(0, 0, 0, 0.81)';
+debugWindow.style['box-shadow'] = '0px 2px 15px 0px rgba(0, 0, 0, 0.81)';
+
+debugWindow.style['display'] = 'none';
+
+logList.style['width'] = '98%';
+logList.style['height'] = '46vh';
+logList.style['position'] = 'absolute';
+logList.style['bottom'] = '0';
+logList.style['background'] = '#28211f';
+logList.style['color'] = '#CCFFD7';
+logList.style['font-family'] = 'monospace';
+logList.style['overflow-y'] = 'scroll';
+logList.style['overflow-x'] = 'hidden';
+logList.style['padding-left'] = '1%';
+logList.style['padding-right'] = '1%';
+logList.style['font-size'] = '1em';
+
+debugWindow.appendChild(closeButton);
+debugWindow.appendChild(logList);
+document.body.appendChild(debugWindow);
+
+var keysPressed = [];
+window.addEventListener("keydown", function(e){
+	keysPressed.push(e.keyCode);
+	if( keysPressed.slice(-12).join('') == "495051527273866977737868" ){
+		debugWindow.style["display"] = "block";
+	};
 });
-
-function activateInput(){
-	document.querySelector(".msgBox").classList.add("active");
-}
-
-function refreshPeerList(peers, p2pManager){
-	document.querySelector(".peer-window .list").innerHTML = "";
-	for( var i = 0; i < peers.length; i++ ){
-		document.querySelector(".peer-window .list").innerHTML += ("<span class='peerItem"+(receptionist.me.uid==peers[i]?" peerMe":"")+"'>"+peers[i]+"</span><br>");
-	}
-	var peers = document.querySelectorAll(".peer-window .list span");
-	for( var i = 0; i < peers.length; i++ ){
-		peers[i].addEventListener("click", function(){
-			p2pManager.pleaseInitConnection(this.textContent);
-		});
-	}
-}
+logList.addEventListener("mousedown", function(e){e.stopPropagation();});
+closeButton.addEventListener("mousedown", function(e){ 
+	debugWindow.style["display"] = "none";
+});
 
 function debug(msg){
 	if(msg.indexOf("recv") != -1 ){
@@ -46,7 +65,11 @@ function debug(msg){
 	time = h+":"+m+":"+s+"."+ms+"> ";
 	console.log(time+msg);
 
-	msg = "<span class='debug-window-time'>"+time+"</span>"+msg;
-	document.querySelector(".debug-window .log").innerHTML += msg + "<br>";
-	document.querySelector(".debug-window .log").scrollTop = document.querySelector(".debug-window .log").scrollHeight;
+	if( msg.match("http") ){
+		msg = msg.split("http")[0] + "http" + (msg.split("http")[1].length > 50? msg.split("http")[1].slice(0, 20) + "..." + msg.split("http")[1].slice(-30):msg.split("http")[1]);
+	}
+
+	msg = "<div style='width: 100%;word-wrap: break-word;'><span style='color: #BFADA9;'>"+time+"</span><span>"+msg+"</span></div>";
+	logList.innerHTML += msg;
+	logList.scrollTop = logList.scrollHeight;
 }
