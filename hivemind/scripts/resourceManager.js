@@ -61,8 +61,10 @@ var ResourceManager = function(){
 	this.receiveResource = function(e){
 		//for passing event names and the resource names
 		debug(e.type? "Resource retrieved from peer - "+e.type: "Resource retrieved from cache");
-		var resource = e.type.substring(9) || e;
+		var resource = e.type? e.type.substring(9) : e;
 		var images = document.querySelectorAll("img[data-resource = '"+resource+"']");
+		//check for cache
+		if(!images) return;
 
 		if( checkHash(webRTCresources["resource_"+resource], images[0].getAttribute("data-resource-hash")) ){
 			for( var i = 0; i < images.length; i++ ){

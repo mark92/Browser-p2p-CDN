@@ -53,7 +53,7 @@ var ConnectionManager = function(){
 			if( localStorage['peer_'+peer] ){
 				break;
 			}
-			peer == null;
+			peer = null;
 		}
 		this.johny.pleaseInitConnection(peer||Object.keys(self.peers)[0]);
 		document.addEventListener(peer||Object.keys(self.peers)[0], function(){
